@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>MaxAuth Migration Tool</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>MaxAuth Migration Tool</h1>
+      <p>Convert legacy authentication data to MaxAuth 1.0.0 or newer.</p>
+    </div>
+    <span class="version">Target schema v2</span>
+  </header>
+
+  <main>
+    <div id="notice" class="notice hidden"></div>
+
+    <section class="card">
+      <h2>1. Migration format</h2>
+      <div class="grid three">
+        <label>Legacy source
+          <select id="sourceType">
+            <option value="jpremium">jPremium</option>
+            <option value="maxauth-beta">MaxAuth BETA</option>
+          </select>
+        </label>
+        <label>Output format
+          <select id="outputFormat" disabled>
+            <option>MaxAuth &gt;= 1.0.0 (schema v2)</option>
+          </select>
+        </label>
+        <label>Output destination
+          <select id="outputMode">
+            <option value="database">Write to database</option>
+            <option value="sql">Export SQL script</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>2. Source data</h2>
+        <span id="sourceStatus" class="status">Not tested</span>
+      </div>
+      <div id="sourceConnection" class="connection"></div>
+      <div class="actions">
+        <button id="testSource" class="primary">Test connection and load tables</button>
+      </div>
+      <div id="tablesArea" class="hidden">
+        <h3>Select legacy table</h3>
+        <p class="hint">Recommended matches are highlighted. Only tables with the complete legacy schema can be selected.</p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th>Table</th><th>Rows</th><th>Schema</th><th>Detection</th></tr></thead>
+            <tbody id="tableRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. Destination</h2>
+      <div class="grid two compact">
+        <label>New table prefix
+          <input id="prefix" value="maxauth_" maxlength="36" autocomplete="off">
+          <small>Creates <code>accounts</code>, <code>identities</code>, and <code>metadata</code> tables.</small>
+        </label>
+        <label id="dialectField" class="hidden">SQL dialect
+          <select id="sqlDialect">
+            <option value="mysql">MySQL / MariaDB</option>
+            <option value="postgresql">PostgreSQL</option>
+            <option value="sqlite">SQLite</option>
+          </select>
+        </label>
+      </div>
+      <div id="databaseTarget">
+        <label class="check"><input id="differentTarget" type="checkbox"> Migrate to a different server or database</label>
+        <p id="sameTargetHint" class="hint">The source connection is also used as the destination. Source rows remain untouched.</p>
+        <div id="targetConnection" class="connection hidden"></div>
+        <div id="targetActions" class="actions hidden">
+          <button id="testTarget">Test destination connection</button>
+          <span id="targetStatus" class="status">Not tested</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>4. Preview</h2>
+        <button id="refreshPreview">Build preview</button>
+      </div>
+      <div id="previewEmpty" class="empty">Connect to a source, select a compatible table, then build the preview.</div>
+      <div id="preview" class="hidden">
+        <div id="stats" class="stats"></div>
+        <div id="warnings"></div>
+        <h3>Target tables</h3>
+        <div id="targetTables" class="code-line"></div>
+        <h3>Account sample (first 20)</h3>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Nickname</th><th>Backend UUID</th><th>Type</th><th>Pending Mojang ID</th></tr></thead>
+            <tbody id="previewRows"></tbody>
+          </table>
+        </div>
+        <details>
+          <summary>Skipped rows and UUID repairs</summary>
+          <pre id="details"></pre>
+        </details>
+      </div>
+      <div class="actions final-actions">
+        <label class="check"><input id="confirmed" type="checkbox"> I have a complete backup and all proxy instances are stopped.</label>
+        <button id="runMigration" class="danger" disabled>Run migration</button>
+      </div>
+      <div id="progress" class="hidden"><progress id="progressBar" max="1" value="0"></progress><span id="progressText"></span></div>
+    </section>
+  </main>
+
+  <footer>Legacy data is read-only. Always validate the result on a restored staging backup first.</footer>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "name": "maxauth-migration-tool",
+  "version": "1.0.0",
+  "description": "Portable migration tool for jPremium and MaxAuth BETA authentication data",
+  "main": "main.js",
+  "author": "DJDevs",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "dist": "electron-builder --win portable",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "mysql2": "3.24.5",
+    "pg": "8.23.1",
+    "sql.js": "1.14.2"
+  },
+  "devDependencies": {
+    "electron": "44.6.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "eu.djdevs.maxauth.migration",
+    "productName": "MaxAuth Migration Tool",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "MaxAuth-Migration-Tool-${version}-portable.${ext}"
+    },
+    "portable": {
+      "artifactName": "MaxAuth-Migration-Tool-${version}-portable.${ext}"
+    }
+  }
+}
