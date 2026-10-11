@@ -2,7 +2,10 @@
 
 Pro převod autentizačních účtů z **jPremium** nebo **MaxAuth BETA (0.9.x a starší)** do MaxAuth 1.0.0 a novějšího použij samostatný **MaxAuth Migration Tool**. Serverový plugin staré řádky sám neimportuje.
 
-Veřejná adresa této stránky je [Data Migration](https://github.com/djnejk/MaxAuth_public/wiki/Data-Migration).
+## Stažení
+
+- [Repozitář MaxAuth Migration Tool](https://github.com/djnejk/MaxAuth_MigrationTool)
+- [Stáhnout nejnovější release](https://github.com/djnejk/MaxAuth_MigrationTool/releases/latest)
 
 ## Podporované migrační cesty
 

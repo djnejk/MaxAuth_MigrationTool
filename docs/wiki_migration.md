@@ -2,7 +2,10 @@
 
 Use the separate **MaxAuth Migration Tool** to convert authentication accounts from **jPremium** or **MaxAuth BETA (0.9.x and older)** to MaxAuth 1.0.0 and newer. The server plugin does not import legacy rows itself.
 
-The public documentation URL for this page is [Data Migration](https://github.com/djnejk/MaxAuth_public/wiki/Data-Migration).
+## Download
+
+- [MaxAuth Migration Tool repository](https://github.com/djnejk/MaxAuth_MigrationTool)
+- [Download the latest release](https://github.com/djnejk/MaxAuth_MigrationTool/releases/latest)
 
 ## Supported migration paths
 
