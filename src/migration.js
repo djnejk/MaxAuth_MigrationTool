@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const { validateIdentifier } = require('./db');
+const { validateExistingTargetSchema } = require('./schema');
 
 const REQUIRED_COLUMNS = [
   'uniqueId', 'premiumId', 'lastNickname', 'hashedPassword', 'verificationToken', 'mailAddress',
@@ -84,13 +85,7 @@ async function inspectTables(database, sourceType) {
 }
 
 async function discoverColumns(database, table) {
-  if (database.type === 'sqlite') {
-    return (await database.query(`PRAGMA table_info(${table})`)).map(row => row.name);
-  }
-  if (database.type === 'postgresql') {
-    return (await database.query("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ? ORDER BY ordinal_position", [table])).map(row => row.column_name);
-  }
-  return (await database.query('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? ORDER BY ordinal_position', [table])).map(row => row.column_name);
+  return (await database.columnInfo(table)).map(column => column.name);
 }
 
 async function readLegacy(database, table) {
@@ -165,7 +160,7 @@ function transformRows(rows, source, targetState) {
       verificationToken: row.verificationToken, lastServer: row.lastServer,
       lastServerRedirectionEnabled: false, lastAddress: row.lastAddress, firstAddress: row.firstAddress,
       sessionExpire: serializeDate(row.sessionExpire), lastSeen: serializeDate(row.lastSeen), firstSeen: serializeDate(row.firstSeen),
-      pendingPremiumId: premiumCompact, normalizedNickname
+      pendingPremiumId: premiumCompact, gender: null, normalizedNickname
     });
     sourceNicknames.add(normalizedNickname);
     sourceBackendUuids.add(backendCompact);
@@ -184,6 +179,7 @@ async function buildMigrationPreview(sourceDb, targetDb, options) {
   const names = tableNames(options.prefix);
   const source = sourceLabel(options.sourceType);
   const rows = await readLegacy(sourceDb, table);
+  if (targetDb) await validateExistingTargetSchema(targetDb, names);
   const targetState = targetDb ? await loadTargetState(targetDb, names) : { nicknames: new Set(), backendUuids: new Set(), pendingIds: new Set(), trustedIds: new Set(), metadata: new Map() };
   const identity = `${sourceDb.describe()}:${source}:${table}`;
   const key = markerKey(identity);

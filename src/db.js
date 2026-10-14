@@ -81,6 +81,16 @@ class RemoteAdapter {
     return (await this.query('SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = \'BASE TABLE\' ORDER BY table_name')).map(r => r.name);
   }
 
+  async columnInfo(table) {
+    validateIdentifier(table, 'table name');
+    if (this.type === 'postgresql') {
+      const rows = await this.query("SELECT column_name AS name, is_nullable AS nullable, data_type AS \"dataType\", character_maximum_length AS \"maxLength\" FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ? ORDER BY ordinal_position", [table]);
+      return rows.map(row => ({ name: row.name, nullable: row.nullable === 'YES', dataType: row.dataType, maxLength: row.maxLength === null ? null : Number(row.maxLength) }));
+    }
+    const rows = await this.query('SELECT column_name AS name, is_nullable AS nullable, data_type AS dataType, character_maximum_length AS maxLength FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? ORDER BY ordinal_position', [table]);
+    return rows.map(row => ({ name: row.name, nullable: row.nullable === 'YES', dataType: row.dataType, maxLength: row.maxLength === null ? null : Number(row.maxLength) }));
+  }
+
   async close() {
     if (this.type === 'postgresql') await this.connection.end();
     else await this.connection.end();
@@ -133,6 +143,16 @@ class SqliteAdapter {
     return (await this.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")).map(r => r.name);
   }
 
+  async columnInfo(table) {
+    validateIdentifier(table, 'table name');
+    return (await this.query(`PRAGMA table_info(${table})`)).map(row => ({
+      name: row.name,
+      nullable: Number(row.notnull) === 0,
+      dataType: String(row.type || ''),
+      maxLength: varcharLength(row.type)
+    }));
+  }
+
   async flush() {
     if (!this.dirty) return;
     const bytes = this.database.export();
@@ -158,6 +178,11 @@ function sqliteValue(value) {
   if (value instanceof Date) return value.toISOString().replace('T', ' ').replace('Z', '');
   if (typeof value === 'boolean') return value ? 1 : 0;
   return value;
+}
+
+function varcharLength(type) {
+  const match = String(type || '').match(/^VARCHAR\s*\(\s*(\d+)\s*\)$/i);
+  return match ? Number(match[1]) : null;
 }
 
 async function openDatabase(rawConfig, options = {}) {

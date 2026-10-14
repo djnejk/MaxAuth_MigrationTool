@@ -1,6 +1,6 @@
 {
   "name": "maxauth-migration-tool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Portable migration tool for jPremium and MaxAuth BETA authentication data",
   "main": "main.js",
   "author": "DJDevs",

@@ -1,41 +1,10 @@
 const fs = require('node:fs');
-
-const ACCOUNT_COLUMNS = [
-  'accountId', 'backendUuid', 'accountType', 'lastNickname', 'mailAddress', 'hashedPassword',
-  'verificationToken', 'lastServer', 'lastServerRedirectionEnabled', 'lastAddress', 'firstAddress',
-  'sessionExpire', 'lastSeen', 'firstSeen', 'pendingPremiumId', 'normalizedNickname'
-];
-
-function dialect(databaseType) {
-  return databaseType === 'postgresql' ? 'postgresql' : databaseType === 'sqlite' ? 'sqlite' : 'mysql';
-}
-
-function schemaStatements(type, names) {
-  const engine = dialect(type);
-  const sqlite = engine === 'sqlite';
-  const uuidType = sqlite ? 'TEXT' : 'VARCHAR(36)';
-  const timeType = sqlite ? 'DATETIME' : 'TIMESTAMP NULL';
-  const booleanType = sqlite ? 'INTEGER' : 'BOOLEAN';
-  const falseValue = sqlite ? '0' : 'FALSE';
-  const nicknameType = sqlite ? 'TEXT COLLATE NOCASE' : 'VARCHAR(16)';
-  return [
-    `CREATE TABLE IF NOT EXISTS ${names.accounts} (` +
-      `accountId ${uuidType} NOT NULL PRIMARY KEY, backendUuid ${uuidType} NOT NULL UNIQUE, ` +
-      `accountType VARCHAR(24) NOT NULL, lastNickname ${nicknameType} NOT NULL UNIQUE, ` +
-      `hashedPassword VARCHAR(256), verificationToken VARCHAR(64), mailAddress VARCHAR(128), ` +
-      `sessionExpire ${timeType}, lastServer VARCHAR(64), lastServerRedirectionEnabled ${booleanType} NOT NULL DEFAULT ${falseValue}, ` +
-      `lastAddress VARCHAR(45), lastSeen ${timeType}, firstAddress VARCHAR(45), firstSeen ${timeType}, ` +
-      `pendingPremiumId ${uuidType}, normalizedNickname VARCHAR(16) NOT NULL UNIQUE)`,
-    `CREATE TABLE IF NOT EXISTS ${names.identities} (` +
-      `provider VARCHAR(24) NOT NULL, externalId ${uuidType} NOT NULL, accountId ${uuidType} NOT NULL, ` +
-      `PRIMARY KEY (provider, externalId), UNIQUE (provider, accountId))`,
-    `CREATE TABLE IF NOT EXISTS ${names.metadata} (` +
-      `metaKey VARCHAR(64) NOT NULL PRIMARY KEY, metaValue VARCHAR(512), updatedAt ${timeType})`
-  ];
-}
+const { ACCOUNT_COLUMNS, dialect, schemaStatements, validateExistingTargetSchema } = require('./schema');
 
 async function ensureSchema(database, names) {
+  await validateExistingTargetSchema(database, names);
   for (const statement of schemaStatements(database.type, names)) await database.run(statement);
+  await validateExistingTargetSchema(database, names, true);
   const indexName = `${names.accounts}_pending_premium_uq`;
   try { await database.run(`CREATE UNIQUE INDEX ${indexName} ON ${names.accounts} (pendingPremiumId)`); }
   catch (error) {

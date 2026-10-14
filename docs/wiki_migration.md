@@ -22,6 +22,10 @@ With the default `storageTablePrefix: 'maxauth_'`, the destination tables are:
 - `maxauth_identities`
 - `maxauth_metadata`
 
+The target `accounts` table contains the reserved column `gender VARCHAR(32) NULL` between `pendingPremiumId` and `normalizedNickname`. The current MaxAuth version does not use it. The migration tool never reads, maps, or infers gender from legacy data; every migrated account receives `NULL`.
+
+An existing target `accounts` table without this column is incompatible and the tool stops with an error. It does not alter or automatically upgrade old development target tables; use clean target tables.
+
 The selected prefix must match `storageTablePrefix` in the new MaxAuth proxy configuration. It may contain only ASCII letters, numbers, and underscores and may be at most 36 characters long.
 
 ## What the tool preserves

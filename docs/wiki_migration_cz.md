@@ -22,6 +22,10 @@ Při výchozím `storageTablePrefix: 'maxauth_'` vzniknou tabulky:
 - `maxauth_identities`
 - `maxauth_metadata`
 
+Cílová tabulka `accounts` obsahuje rezervovaný sloupec `gender VARCHAR(32) NULL` mezi `pendingPremiumId` a `normalizedNickname`. Aktuální verze MaxAuth jej nepoužívá. Migrační nástroj gender ze starých dat nikdy nečte, nemapuje ani neodhaduje; každý migrovaný účet dostane hodnotu `NULL`.
+
+Existující cílová tabulka `accounts` bez tohoto sloupce je nekompatibilní a nástroj skončí s chybou. Staré vývojové cílové tabulky nemění ani automaticky neaktualizuje; použij čisté cílové tabulky.
+
 Prefix zvolený v nástroji musí být stejný jako `storageTablePrefix` v nové proxy konfiguraci MaxAuth. Smí obsahovat pouze ASCII písmena, čísla a podtržítka a může mít nejvýše 36 znaků.
 
 ## Co nástroj zachová
