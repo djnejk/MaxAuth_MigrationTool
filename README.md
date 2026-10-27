@@ -15,7 +15,7 @@ The target `accounts` table includes the reserved nullable column `gender VARCHA
 
 ## Documentation
 
-- [Data Migration](https://github.com/djnejk/MaxAuth_public/wiki/Data-Migration)
-- [Migrace dat – česká verze](https://github.com/djnejk/MaxAuth_public/wiki/Migrace-dat-%28CZ%29)
+- [Data Migration](https://github.com/djnejk/MaxAuth_public/wiki/02-%7C-Data-Migration)
+- [Migrace dat – česká verze](https://github.com/djnejk/MaxAuth_public/wiki/CZ_02-%7C-Migrace-dat)
 
 Read the documentation and create a complete database backup before starting a migration.
