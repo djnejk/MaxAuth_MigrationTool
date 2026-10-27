@@ -11,8 +11,6 @@ Supported databases:
 
 The application can migrate data directly to a database or export a standalone SQL script.
 
-The target `accounts` table includes the reserved nullable column `gender VARCHAR(32)`. Legacy data is never mapped or inferred into this column; every migrated account stores `NULL`.
-
 ## Documentation
 
 - [Data Migration](https://github.com/djnejk/MaxAuth_public/wiki/02-%7C-Data-Migration)
