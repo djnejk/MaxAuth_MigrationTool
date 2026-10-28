@@ -1,7 +1,8 @@
 {
   "name": "maxauth-migration-tool",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Portable migration tool for jPremium and MaxAuth BETA authentication data",
+  "desktopName": "MaxAuth Migration Tool",
   "main": "main.js",
   "author": "DJDevs",
   "license": "MIT",
@@ -9,7 +10,9 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
-    "dist": "electron-builder --win portable",
+    "dist": "npm run dist:win",
+    "dist:win": "electron-builder --win portable",
+    "dist:linux": "electron-builder --linux AppImage deb tar.gz --x64",
     "pack": "electron-builder --dir"
   },
   "dependencies": {
@@ -39,13 +42,44 @@
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "MaxAuth-Migration-Tool-${version}-portable.${ext}"
     },
     "portable": {
       "artifactName": "MaxAuth-Migration-Tool-${version}-portable.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "syncDesktopName": true,
+      "maintainer": "DJDevs <djnejk@djdevs.eu>",
+      "executableName": "maxauth-migration-tool",
+      "artifactName": "MaxAuth-Migration-Tool-${version}-linux-${arch}.${ext}",
+      "synopsis": "Migrate jPremium and MaxAuth BETA authentication data",
+      "description": "Portable migration tool for converting jPremium and MaxAuth BETA authentication data to MaxAuth 1.0.0 and newer."
     }
   }
 }

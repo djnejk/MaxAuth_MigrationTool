@@ -1,6 +1,6 @@
 # MaxAuth Migration Tool
 
-Portable migration tool for converting authentication data from **jPremium** or **MaxAuth BETA** to **MaxAuth 1.0.0 and newer**.
+Cross-platform migration tool for converting authentication data from **jPremium** or **MaxAuth BETA** to **MaxAuth 1.0.0 and newer**.
 
 Supported databases:
 
@@ -10,6 +10,17 @@ Supported databases:
 - PostgreSQL
 
 The application can migrate data directly to a database or export a standalone SQL script.
+
+Release downloads are available for Windows as a portable `.exe` and for Linux as `.AppImage`, `.deb`, and `.tar.gz` packages.
+
+On Linux, make the AppImage executable before starting it:
+
+```bash
+chmod +x MaxAuth-Migration-Tool-*-linux-x86_64.AppImage
+./MaxAuth-Migration-Tool-*-linux-x86_64.AppImage
+```
+
+Install the Debian/Ubuntu package with `sudo apt install ./MaxAuth-Migration-Tool-*-linux-amd64.deb`. The `.tar.gz` archive can be extracted and started directly without installation.
 
 ## Documentation
 
