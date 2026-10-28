@@ -52,9 +52,10 @@ function exportSql(preview, targetType) {
     '-- MaxAuth >= 1.0.0 authentication storage migration',
     `-- Source: ${preview.source} / ${preview.table}`,
     `-- Generated: ${new Date().toISOString()}`,
-    '-- Keep a complete backup and stop all proxy instances before executing this script.',
-    ...schemaStatements(targetType, preview.names).map(sql => `${sql};`)
+    '-- Keep a complete backup and stop all proxy instances before executing this script.'
   ];
+  if (engine === 'mysql') lines.push("SET time_zone = '+00:00';");
+  lines.push(...schemaStatements(targetType, preview.names).map(sql => `${sql};`));
   if (engine === 'mysql') {
     lines.push(`SET @maxauth_index_exists = (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = '${preview.names.accounts}' AND index_name = '${preview.names.accounts}_pending_premium_uq');`);
     lines.push(`SET @maxauth_index_sql = IF(@maxauth_index_exists = 0, 'CREATE UNIQUE INDEX ${preview.names.accounts}_pending_premium_uq ON ${preview.names.accounts} (pendingPremiumId)', 'SELECT 1');`);

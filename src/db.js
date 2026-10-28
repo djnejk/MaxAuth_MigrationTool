@@ -208,12 +208,31 @@ async function openDatabase(rawConfig, options = {}) {
     await client.connect();
     return new RemoteAdapter(config, client);
   }
-  const connection = await mysql.createConnection({
+  const connection = await mysql.createConnection(mysqlConnectionOptions(config));
+  try {
+    await configureMysqlSession(connection);
+  } catch (error) {
+    try { await connection.end(); } catch { /* preserve the configuration failure */ }
+    throw error;
+  }
+  return new RemoteAdapter(config, connection);
+}
+
+function mysqlConnectionOptions(config) {
+  return {
     host: config.host, port: config.port, database: config.database,
     user: config.user, password: config.password,
-    connectTimeout: 8000, charset: 'utf8mb4', multipleStatements: false
-  });
-  return new RemoteAdapter(config, connection);
+    connectTimeout: 8000, charset: 'utf8mb4', multipleStatements: false,
+    // Read DATETIME values literally and TIMESTAMP values in UTC. This also
+    // prevents the driver from creating nonexistent local times during DST.
+    timezone: 'Z'
+  };
+}
+
+async function configureMysqlSession(connection) {
+  // Exported dates are serialized as UTC. Keep writes in UTC so a valid UTC
+  // value such as 02:48 is never rejected as a local daylight-saving gap.
+  await connection.query("SET time_zone = '+00:00'");
 }
 
 async function withDatabase(config, options, work) {
@@ -222,4 +241,7 @@ async function withDatabase(config, options, work) {
   finally { await adapter.close(); }
 }
 
-module.exports = { openDatabase, withDatabase, validateIdentifier, normalizeConfig };
+module.exports = {
+  openDatabase, withDatabase, validateIdentifier, normalizeConfig,
+  mysqlConnectionOptions, configureMysqlSession
+};

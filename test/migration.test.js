@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { openDatabase } = require('../src/db');
+const { openDatabase, mysqlConnectionOptions, configureMysqlSession } = require('../src/db');
 const { nameUuid, transformRows, inspectTables, buildMigrationPreview } = require('../src/migration');
 const { writeMigration, exportSql, ensureSchema, schemaStatements, ACCOUNT_COLUMNS } = require('../src/output');
 
@@ -35,6 +35,24 @@ test('invalid UUID is repaired and source collisions are skipped', () => {
   assert.equal(result.migrated, 1);
   assert.equal(result.repaired, 1);
   assert.equal(result.skippedRows[0].reason, 'nickname-collision');
+});
+
+test('MySQL and MariaDB connections use UTC to avoid daylight-saving gaps', async () => {
+  const options = mysqlConnectionOptions({
+    host: 'localhost', port: 3306, database: 'maxauth', user: 'user', password: 'password'
+  });
+  assert.equal(options.timezone, 'Z');
+
+  const statements = [];
+  await configureMysqlSession({ query: async sql => statements.push(sql) });
+  assert.deepEqual(statements, ["SET time_zone = '+00:00'"]);
+});
+
+test('DST-gap-looking UTC timestamps remain writable migration values', () => {
+  const result = transformRows([
+    legacy({ firstSeen: new Date('2025-03-30T02:48:31.000Z') })
+  ], 'MAXAUTH_BETA', emptyTarget());
+  assert.equal(result.accounts[0].firstSeen, '2025-03-30 02:48:31.000');
 });
 
 async function migrateLegacySource(t, sourceType, sourceTable, nickname) {
@@ -133,5 +151,10 @@ test('SQL export includes nullable gender and explicitly inserts NULL for every 
     assert.match(sql, /gender VARCHAR\(32\) NULL/);
     assert.match(sql, /pendingPremiumId, gender, normalizedNickname\) VALUES \([^\n]+, '12345678123412349234123456789abc', NULL, 'player'\);/);
     assert.ok(sql.endsWith('COMMIT;\n'));
+    if (type === 'mysql' || type === 'mariadb') {
+      assert.match(sql, /SET time_zone = '\+00:00';/);
+    } else {
+      assert.doesNotMatch(sql, /SET time_zone/);
+    }
   }
 });
