@@ -11,8 +11,8 @@
     "start": "electron .",
     "test": "node --test",
     "dist": "npm run dist:win",
-    "dist:win": "electron-builder --win portable",
-    "dist:linux": "electron-builder --linux AppImage deb tar.gz --x64",
+    "dist:win": "electron-builder --win portable --publish never",
+    "dist:linux": "electron-builder --linux AppImage deb tar.gz --x64 --publish never",
     "pack": "electron-builder --dir"
   },
   "dependencies": {
